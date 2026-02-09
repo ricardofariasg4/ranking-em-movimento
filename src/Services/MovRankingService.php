@@ -18,8 +18,8 @@ class MovRankingService
         // Se o parâmetro for numérico, trata como ID; caso contrário, trata como nome
         if ($isNumeric) {
             return $this->rankingRepository->getRankingByMovementId((int)$movementParam);
-        } else {
-            return $this->rankingRepository->getRankingByMovementName($movementParam);
         }
+        
+        return $this->rankingRepository->getRankingByMovementName($movementParam);
     }
 }
