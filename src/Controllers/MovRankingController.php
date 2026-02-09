@@ -2,12 +2,18 @@
 
 namespace App\Controllers;
 
-use App\Database\Connection;
-use App\Repository\RankingRepository;
 use App\Services\MovRankingService;
+use App\Helpers\JsonResponse;
 
 class MovRankingController
 {
+    private MovRankingService $movRankingService;
+
+    public function __construct(MovRankingService $movRankingService)
+    {
+        $this->movRankingService = $movRankingService;
+    }
+
     public function show()
     {
         $movementParam = $_GET['movement'];
@@ -18,18 +24,15 @@ class MovRankingController
             return;
         }
 
-        $dbConnection = Connection::getInstance();
-        $rankingRepository = new RankingRepository($dbConnection);
-        $service = new MovRankingService($rankingRepository);
-        $ranking = $service->getRankingByMovement($movementParam, is_numeric($movementParam));
+        $ranking = $this->movRankingService->getRankingByMovement(
+            $movementParam, 
+            is_numeric($movementParam)
+        );
 
-        header('Content-Type: application/json');
-
-        if (isset($ranking)) {
-            echo json_encode($ranking);
+        if (!empty($ranking)) {
+            JsonResponse::success($ranking);
         } else {
-            http_response_code(400);
-            echo json_encode(['error' => 'Invalid movement parameter']);
+            JsonResponse::error('Invalid movement parameter', 400);
         }
     }
 }
