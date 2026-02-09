@@ -53,7 +53,7 @@ Dockerfile
 
 3. **Suba os containers:**
 	```bash
-	docker-compose up --build
+	docker compose up --build
 	```
 
 4. **Acesse a aplicação:**
