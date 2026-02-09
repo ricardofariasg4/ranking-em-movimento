@@ -40,7 +40,7 @@ class Router
                 array_shift($matches);
                 [$controller, $method] = $route['action'];
 
-                $instance = new $controller();
+                $instance = $this->resolve($controller);
                 $instance->$method(...$matches);
                 return;
             }
@@ -54,5 +54,33 @@ class Router
     {
         $regex = preg_replace('#\{[\w]+\}#', '([\w-]+)', $path);
         return "#^{$regex}$#";
+    }
+
+    private function resolve(string $class)
+    {
+        if ($class === \PDO::class) {
+            return \App\Database\Connection::getInstance();
+        }
+        
+        $reflector = new \ReflectionClass($class);
+        $constructor = $reflector->getConstructor();
+
+        if (!$constructor) {
+            return new $class();
+        }
+
+        $params = $constructor->getParameters();
+        $dependencies = [];
+
+        foreach ($params as $param) {
+            $type = $param->getType();
+            if ($type && !$type->isBuiltin()) {
+                $dependencies[] = $this->resolve($type->getName());
+            } else {
+                throw new \Exception("Unable to resolve the parameter {$param->getName()} in {$class}");
+            }
+        }
+
+        return $reflector->newInstanceArgs($dependencies);
     }
 }
