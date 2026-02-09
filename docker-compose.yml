@@ -8,8 +8,6 @@ services:
     container_name: php-ranking-app
     ports:
       - "8080:80"
-    volumes:
-      - .:/var/www/html
     depends_on:
       - db
     environment:
